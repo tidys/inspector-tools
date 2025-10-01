@@ -1,9 +1,9 @@
 <template>
   <div class="app">
     <textarea style="min-height: 100px" v-model="txt"></textarea>
-    <div>
-      <button @click="paste">粘贴</button>
-      <button @click="onClick">增加订单</button>
+    <div class="btn-container">
+      <button class="btn" @click="paste">粘贴</button>
+      <button class="btn" @click="onClick">增加订单</button>
     </div>
   </div>
 </template>
@@ -96,5 +96,12 @@ export default {
 .app {
   display: flex;
   flex-direction: column;
+}
+.btn-container {
+  display: flex;
+  .btn {
+    flex: 1;
+    height: 100px;
+  }
 }
 </style>
