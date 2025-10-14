@@ -4,7 +4,9 @@
     <div class="btn-container">
       <button class="btn" @click="paste">粘贴</button>
       <button class="btn" @click="onClick">增加订单</button>
+      <button class="btn" @click="onClickTest">给当前用户追加测试网址</button>
     </div>
+    <a :href="testUrl" target="_blank">测试网址</a>
   </div>
 </template>
 
@@ -19,9 +21,71 @@ export default {
   name: "App",
   components: {},
   setup() {
-    let txt = ref('{"user":"123","site":"456"}');
+    let txt = ref('{"id":"123","url":"456"}');
+    let testUrl = ref("https://cs.youxi112.com/hczwjs/");
+    function getIdUrl(order) {
+      const ret = { id: "", url: "", error: "" };
+      try {
+        const orderObj = JSON.parse(order);
+        ret.id = orderObj.id || "";
+        ret.url = orderObj.url || "";
+      } catch (error) {
+        ret.error = `无效的订单格式，不是有效的json数据`;
+        return ret;
+      }
+      if (!ret.id) {
+        ret.error = `无效的用户，缺失id字段`;
+        return ret;
+      }
+      if (!ret.url) {
+        ret.error = `无效的站点，缺失url字段`;
+        return ret;
+      }
+      return ret;
+    }
+
+    async function addOrider(order) {
+      const { id, url, error } = getIdUrl(order);
+      if (error) {
+        alert(error);
+        return;
+      }
+      console.log("click");
+      try {
+        // 查询是否有该记录
+        const table = "CdKey";
+        const ret = await supabase.from(table).select("*").eq("site", url).eq("user", id);
+        if (ret.data && ret.data.length > 0) {
+          alert(`用户: ${id}\n网站: ${url}\n已存在`);
+          return;
+        }
+
+        // const token = "sbp_c2794be3bb1e536d55bf2f44ecf03f208267deea";
+        // const dd = await supabase.auth.setSession({
+        //   access_token: token,
+        //   refresh_token: token,
+        // });
+        // console.log(dd);
+        // 添加一条记录
+        const { data, error } = await supabase
+          .from(table)
+          .insert([{ user: id, site: url }])
+          .select();
+        if (error) {
+          console.log(error);
+          alert(`${id}-${url}增加失败`);
+          return;
+        }
+        console.log(data);
+        alert(`id: ${id}\nurl: ${url}\n增加成功`);
+      } catch (e) {
+        console.log(e);
+        return false;
+      }
+    }
     return {
       txt,
+      testUrl,
       async paste() {
         try {
           const text = await navigator.clipboard.readText();
@@ -31,64 +95,26 @@ export default {
           alert("无法从剪切板粘贴内容，请手动粘贴或检查浏览器权限");
         }
       },
+      async onClickTest() {
+        console.log("click test");
+        if (!txt.value) {
+          return;
+        }
+        const { id, error } = getIdUrl(toRaw(txt.value));
+        if (error) {
+          alert(error);
+          return;
+        }
+        const order = JSON.stringify({ id: id, url: toRaw(testUrl.value) });
+        await addOrider(order);
+      },
       async onClick() {
         if (!txt.value) {
           return;
         }
         console.log(txt.value);
         const order = toRaw(txt.value);
-        let id = "";
-        let url = "";
-        try {
-          const orderObj = JSON.parse(order);
-          id = orderObj.id || "";
-          url = orderObj.url || "";
-        } catch (error) {
-          console.log(error);
-          alert(`无效的订单格式，不是有效的json数据`);
-          return;
-        }
-        if (!id) {
-          alert(`无效的用户，缺失id字段`);
-          return;
-        }
-        if (!url) {
-          alert(`无效的站点，缺失url字段`);
-          return;
-        }
-
-        console.log("click");
-        try {
-          // 查询是否有该记录
-          const table = "CdKey";
-          const ret = await supabase.from(table).select("*").eq("site", url).eq("user", id);
-          if (ret.data && ret.data.length > 0) {
-            alert(`用户:${id}\n网站:${url}\n已存在`);
-            return;
-          }
-
-          // const token = "sbp_c2794be3bb1e536d55bf2f44ecf03f208267deea";
-          // const dd = await supabase.auth.setSession({
-          //   access_token: token,
-          //   refresh_token: token,
-          // });
-          // console.log(dd);
-          // 添加一条记录
-          const { data, error } = await supabase
-            .from(table)
-            .insert([{ user: id, site: url }])
-            .select();
-          if (error) {
-            console.log(error);
-            alert(`${id}-${url}增加失败`);
-            return;
-          }
-          console.log(data);
-          alert(`${id}-${url}增加成功`);
-        } catch (e) {
-          console.log(e);
-          return false;
-        }
+        await addOrider(order);
       },
     };
   },
