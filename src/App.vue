@@ -37,23 +37,23 @@ export default {
         }
         console.log(txt.value);
         const order = toRaw(txt.value);
-        let user = "";
-        let site = "";
+        let id = "";
+        let url = "";
         try {
           const orderObj = JSON.parse(order);
-          user = orderObj.user || "";
-          site = orderObj.site || "";
+          id = orderObj.id || "";
+          url = orderObj.url || "";
         } catch (error) {
           console.log(error);
-          alert(`无效的订单格式`);
+          alert(`无效的订单格式，不是有效的json数据`);
           return;
         }
-        if (!user) {
-          alert(`无效的用户`);
+        if (!id) {
+          alert(`无效的用户，缺失id字段`);
           return;
         }
-        if (!site) {
-          alert(`无效的站点`);
+        if (!url) {
+          alert(`无效的站点，缺失url字段`);
           return;
         }
 
@@ -61,9 +61,9 @@ export default {
         try {
           // 查询是否有该记录
           const table = "CdKey";
-          const ret = await supabase.from(table).select("*").eq("site", site).eq("user", user);
+          const ret = await supabase.from(table).select("*").eq("site", url).eq("user", id);
           if (ret.data && ret.data.length > 0) {
-            alert(`用户:${user}\n网站:${site}\n已存在`);
+            alert(`用户:${id}\n网站:${url}\n已存在`);
             return;
           }
 
@@ -74,14 +74,17 @@ export default {
           // });
           // console.log(dd);
           // 添加一条记录
-          const { data, error } = await supabase.from(table).insert([{ user, site }]).select();
+          const { data, error } = await supabase
+            .from(table)
+            .insert([{ user: id, site: url }])
+            .select();
           if (error) {
             console.log(error);
-            alert(`${user}-${site}增加失败`);
+            alert(`${id}-${url}增加失败`);
             return;
           }
           console.log(data);
-          alert(`${user}-${site}增加成功`);
+          alert(`${id}-${url}增加成功`);
         } catch (e) {
           console.log(e);
           return false;
