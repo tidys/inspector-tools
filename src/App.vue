@@ -2,11 +2,14 @@
   <div class="app">
     <textarea style="min-height: 100px" v-model="txt"></textarea>
     <div class="btn-container">
+      <button class="btn all" @click="onClickAll">开通所有</button>
       <button class="btn" @click="paste">粘贴</button>
-      <button class="btn" @click="onClick">增加订单</button>
-      <button class="btn" @click="onClickTest">给当前用户追加测试网址</button>
+      <button class="btn one" @click="onClick">开通单个</button>
     </div>
-    <a :href="testUrl" target="_blank">测试网址</a>
+    <div style="margin: 3px 0">
+      <button class="btn-test" @click="onClickTest">给当前用户追加测试网址</button>
+      <a :href="testUrl" target="_blank">测试网址</a>
+    </div>
   </div>
 </template>
 
@@ -21,7 +24,7 @@ export default {
   name: "App",
   components: {},
   setup() {
-    let txt = ref('{"id":"123","url":"456"}');
+    let txt = ref('{"id":"xuyanfeng","url":"*"}');
     let testUrl = ref("https://cs.youxi112.com/hczwjs/");
     function getIdUrl(order) {
       const ret = { id: "", url: "", error: "" };
@@ -116,6 +119,18 @@ export default {
         const order = toRaw(txt.value);
         await addOrider(order);
       },
+      async onClickAll() {
+        if (!txt.value) {
+          return;
+        }
+        const { id, error } = getIdUrl(toRaw(txt.value));
+        if (error) {
+          alert(error);
+          return;
+        }
+        const order = JSON.stringify({ id: id, url: "*" });
+        await addOrider(order);
+      },
     };
   },
 };
@@ -126,11 +141,21 @@ export default {
   display: flex;
   flex-direction: column;
 }
+.btn-test {
+  height: 50px;
+  margin: 0 3px;
+}
 .btn-container {
   display: flex;
   .btn {
     flex: 1;
     height: 100px;
+  }
+  .all {
+    background-color: rgb(249, 113, 55);
+  }
+  .one {
+    background-color: rgb(111, 255, 101);
   }
 }
 </style>
