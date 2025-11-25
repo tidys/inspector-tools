@@ -9,11 +9,13 @@
       <div class="label">卡密:</div>
       <input style="flex: 1" type="text" placeholder="请输入卡密" v-model="cdk" />
       <button class="btn" @click="onRandomCDK">随机卡密</button>
+      <button class="btn" @click="onEnableCDK">启用卡密</button>
+      <button class="btn" @click="onDisableCDK">禁用卡密</button>
     </div>
     <div class="line">
       <div style="flex: 1"></div>
       <button class="btn" style="background-color: aqua; width: 180px" @click="onQueryCDK">查询卡密</button>
-      <button class="btn" style="background-color: aqua; width: 180px" @click="onAddCDK">增加30天的卡密</button>
+      <button class="btn" style="background-color: aqua; width: 180px" @click="onAddCDK">新增30天的卡密</button>
     </div>
   </div>
 </template>
@@ -33,9 +35,50 @@ export default {
   setup() {
     const cdk = ref(localStorage.getItem(KEY_CDK) || "");
     const machine = ref(localStorage.getItem(KEY_MACHINE) || "");
+
+    function getTip(enable) {
+      return enable === 1 ? "启用" : "禁用";
+    }
+
+    async function enableCDK(enable) {
+      const tip = getTip(enable);
+      const cdkValue = toRaw(cdk.value);
+      const ret = await supabase.from(TABLE).select("*").eq("cdkey", cdkValue);
+      const b = ret.data && Array.isArray(ret.data) && ret.data.length > 0;
+      if (!b) {
+        alert(`未查询到卡密: ${cdkValue}`);
+        return;
+      }
+      for (let i = 0; i < ret.data.length; i++) {
+        const info = ret.data[i];
+        if (info.cdkey === cdkValue && info.enable === enable) {
+          alert(`卡密${cdkValue}已经${tip}`);
+          return;
+        }
+      }
+      const { data, error } = await supabase.from(TABLE).update({ enable: enable }).eq("cdkey", cdkValue).select();
+      if (error) {
+        alert(`${tip}卡密失败: ${error.message}`);
+        return;
+      }
+      if (data && data.length > 0) {
+        alert(`${tip}卡密成功: ${cdkValue}`);
+      }
+    }
+
     return {
       cdk,
       machine,
+      async onDisableCDK() {
+        // eslint-disable-next-line no-debugger
+        debugger;
+        await enableCDK(0);
+      },
+      async onEnableCDK() {
+        // eslint-disable-next-line no-debugger
+        debugger;
+        await enableCDK(1);
+      },
       async onQueryCDK() {
         // eslint-disable-next-line no-debugger
         debugger;
@@ -46,7 +89,8 @@ export default {
           const info = ret.data[0];
           const t1 = new Date(info["time-start"]).toLocaleString();
           const t2 = new Date(info["time-end"]).toLocaleString();
-          alert(`机器码: ${machineValue}\n卡密: ${cdkValue}\n开始时间:${t1}\n结束时间:${t2}`);
+          const enable = getTip(info["enable"]);
+          alert(`状态:${enable}\n机器码: ${machineValue}\n卡密: ${cdkValue}\n开始时间:${t1}\n结束时间:${t2}`);
           return;
         }
       },
@@ -81,6 +125,7 @@ export default {
               cdkey: cdkValue,
               ["time-start"]: cur, //
               ["time-end"]: end,
+              enable: 1,
             },
           ])
           .select();
