@@ -3,19 +3,19 @@
     <div class="line">
       <div class="label">机器码:</div>
       <input style="flex: 1" type="text" placeholder="机器码" v-model="machine" />
-      <button class="btn" @click="onRandomMachine">随机机器码</button>
+      <button class="btn" @click="onRandomMachine" v-if="false">随机机器码</button>
     </div>
     <div class="line">
       <div class="label">卡密:</div>
       <input style="flex: 1" type="text" placeholder="请输入卡密" v-model="cdk" />
       <button class="btn" @click="onRandomCDK">随机卡密</button>
-      <button class="btn" @click="onEnableCDK">启用卡密</button>
-      <button class="btn" @click="onDisableCDK">禁用卡密</button>
+      <button class="btn green" @click="onEnableCDK">启用卡密</button>
+      <button class="btn red" @click="onDisableCDK">禁用卡密</button>
     </div>
     <div class="line">
       <div style="flex: 1"></div>
-      <button class="btn" style="background-color: aqua; width: 180px" @click="onQueryCDK">查询卡密</button>
-      <button class="btn" style="background-color: aqua; width: 180px" @click="onAddCDK">新增30天的卡密</button>
+      <button class="btn" style="width: 180px" @click="onQueryCDK">查询卡密</button>
+      <button class="btn add" style="width: 180px" @click="onAddCDK">新增30天的卡密</button>
     </div>
   </div>
 </template>
@@ -43,7 +43,20 @@ export default {
     async function enableCDK(enable) {
       const tip = getTip(enable);
       const cdkValue = toRaw(cdk.value);
-      const ret = await supabase.from(TABLE).select("*").eq("cdkey", cdkValue);
+      // const machineValue = toRaw(machine.value);
+      // if (!machineValue) {
+      //   alert("请输入机器码");
+      //   return;
+      // }
+      if (!cdkValue) {
+        alert("请输入卡密");
+        return;
+      }
+      const ret = await supabase
+        .from(TABLE)
+        .select("*")
+        // .eq("machine", machineValue)
+        .eq("cdkey", cdkValue);
       const b = ret.data && Array.isArray(ret.data) && ret.data.length > 0;
       if (!b) {
         alert(`未查询到卡密: ${cdkValue}`);
@@ -138,6 +151,9 @@ export default {
         alert(`机器码: ${machineValue}\n卡密: ${cdkValue}\n增加成功`);
       },
       onRandomCDK() {
+        // const machineValue = toRaw(machine.value);
+        // let rnd = new Date().getTime();
+        // rnd = `${rnd}${machineValue || ""}`;
         cdk.value = Math.random().toString(36).substring(2, 10);
       },
       onRandomMachine() {
@@ -153,7 +169,15 @@ export default {
   margin-left: 5px;
   width: 100px;
 }
-
+.add {
+  background-color: rgb(179, 179, 202);
+}
+.red {
+  background-color: rgb(223, 127, 127);
+}
+.green {
+  background-color: rgb(125, 223, 125);
+}
 .line {
   margin: 2px 1px;
   display: flex;
