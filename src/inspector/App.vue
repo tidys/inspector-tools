@@ -15,11 +15,7 @@
 
 <script>
 import { ref, toRaw } from "vue";
-import { createClient } from "@supabase/supabase-js";
-const supabaseUrl = "https://cxzdqwdteoxteqtpllar.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4emRxd2R0ZW94dGVxdHBsbGFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyODY3OTksImV4cCI6MjA3NDg2Mjc5OX0.DDue3CQJjns3PwA0nCxL9yVwjLk-AkNzHd7950ycysY";
-const supabase = createClient(supabaseUrl, supabaseKey);
-
+import { supabase } from "../com/db";
 export default {
   name: "App",
   components: {},
@@ -47,7 +43,7 @@ export default {
       return ret;
     }
 
-    async function addOrider(order) {
+    async function addOrder(order) {
       const { id, url, error } = getIdUrl(order);
       if (error) {
         alert(error);
@@ -109,7 +105,7 @@ export default {
           return;
         }
         const order = JSON.stringify({ id: id, url: toRaw(testUrl.value) });
-        await addOrider(order);
+        await addOrder(order);
       },
       async onClick() {
         if (!txt.value) {
@@ -117,7 +113,7 @@ export default {
         }
         console.log(txt.value);
         const order = toRaw(txt.value);
-        await addOrider(order);
+        await addOrder(order);
       },
       async onClickAll() {
         if (!txt.value) {
@@ -129,7 +125,7 @@ export default {
           return;
         }
         const order = JSON.stringify({ id: id, url: "*" });
-        await addOrider(order);
+        await addOrder(order);
       },
     };
   },
