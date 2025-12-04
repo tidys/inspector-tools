@@ -116,6 +116,10 @@ export default {
           alert("请输入机器码");
           return;
         }
+        if (machineValue.length !== 24) {
+          alert(`无效的机器码，长度必须为24位！当前长度为: ${machineValue.length}`);
+          return;
+        }
         if (!cdkValue.length) {
           alert("请输入卡密");
           return;
