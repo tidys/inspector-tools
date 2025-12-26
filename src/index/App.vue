@@ -2,6 +2,7 @@
   <div class="root">
     <a href="./voice.html">voice-faker</a>
     <a href="./inspector.html">inspector</a>
+    <a href="./plus.html">plus</a>
   </div>
 </template>
 

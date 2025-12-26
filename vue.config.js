@@ -11,6 +11,10 @@ module.exports = defineConfig({
       entry: "src/inspector/main.js",
       filename: "inspector.html"
     },
+    plus: {
+      entry: "src/plus/main.js",
+      filename: "plus.html"
+    },
     voice: {
       entry: "src/voice/main.js",
       filename: "voice.html"
